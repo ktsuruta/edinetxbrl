@@ -1,0 +1,1 @@
+TMP_FILE_DIR = '/home/ken/xbrldownloader/tmp/tmpfile'

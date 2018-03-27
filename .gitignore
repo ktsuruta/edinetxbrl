@@ -1,0 +1,8 @@
+tmp
+tmp/*
+virtualenv
+virtualenv/*
+*.pyc
+**/*.pyc
+.idea/*
+.idea
