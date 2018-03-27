@@ -2,6 +2,7 @@
 
 from xml.etree import ElementTree
 import requests as requests
+from urllib.parse import unquote
 
 import config
 
@@ -32,7 +33,8 @@ class Downloader():
         :return: [None]
         '''
         file = open(config.TMP_FILE_DIR,'w')
-        file.write(self.response.content)
+        file.write(self.response.text)
+        file.close()
 
 
 
@@ -41,14 +43,21 @@ class Downloader():
         This method parses a file of TMP_FILR_DIR to get urls of EDINET.
         :return: [list] of urls
         '''
-        print('Starting to parse ' + config.TMP_FILE_DIR)
         tree = ElementTree.parse(config.TMP_FILE_DIR)
         root = tree.getroot()
         ns = {'feed': 'http://purl.org/atom/ns#'}
         for item in root.findall('feed:entry', ns):
-            if "有価証券報告書".decode('utf8') in item.find("feed:title", ns).text or "四半期報告書".decode('utf8')  in item.find("feed:title", ns).text:
-                print(item.find("feed:title", ns).text)
+            if "有価証券報告書" in item.find("feed:title", ns).text or "四半期報告書" in item.find("feed:title", ns).text:
                 self.url_list.append(item.find("feed:link",ns).attrib['href'])
+
+    def _decode_url(self, original_url):
+        '''
+        This method format param url to a genuin url to reach edinet server.
+        :param original_url: A url starting with https://webapi.yanoshin.jp/rde.php?https%3A%2F%2
+        :return: <str>: url starting with https://disclosure...
+        '''
+        undecoded_url = original_url.split('?')[1]
+        return unquote(undecoded_url)
 
     def decode_url_list(self):
         '''
