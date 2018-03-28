@@ -2,6 +2,7 @@
 
 from xml.etree import ElementTree
 import requests as requests
+import shutil
 from urllib.parse import unquote
 
 import config
@@ -63,3 +64,16 @@ class Downloader():
         :return: None
         '''
         self.url_list = list(map(self._decode_url, self.url_list))
+
+    def _download_a_file(self, url):
+        '''
+        This method is to download a zip file of param url. Inner method.
+        :param <str> url: A url of zip file to download
+        :return:
+        '''
+        response = requests.get(url, verify=False, stream=True)
+        file_dir = config.DOWNLOAD_DIR + response.headers['Content-Disposition'].split("\"")[1]
+        with open(file_dir, 'wb') as f:
+            shutil.copyfileobj(response.raw, f)
+
+
