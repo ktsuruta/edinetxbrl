@@ -44,15 +44,26 @@ class TestRequest(unittest.TestCase):
 
     def test_can_decode_a_url(self):
         '''
-        This test ensure that decode method can decode all urls in url list.
+        This test ensure that decode method can decode a url in url list.
         '''
         self.d.parse_for_serching_edinet_links()
         url = self.d._decode_url(self.d.url_list[0])
-        print('decoded url ' + url)
         response = requests.get(url, verify=False)
         self.assertEqual(response.status_code, 200)
 
     def test_can_decode_urls(self):
+        '''
+        This test eunsures that url list is decoded correctly, calling internlly _decode_a_url method.
+        :return:
+        '''
+        self.d.parse_for_serching_edinet_links()
+        self.d.decode_url_list()
+        url = self.d.url_list[0]
+        self.assertNotIn('https://webapi.yanoshin.jp', url)
+        response = requests.get(url, verify=False)
+        self.assertEqual(response.status_code, 200)
+
+    def test_can_download_files_in_url_list(self):
         pass
 
 if __name__ == '__main__':

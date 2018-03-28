@@ -36,8 +36,6 @@ class Downloader():
         file.write(self.response.text)
         file.close()
 
-
-
     def parse_for_serching_edinet_links(self):
         '''
         This method parses a file of TMP_FILR_DIR to get urls of EDINET.
@@ -61,6 +59,7 @@ class Downloader():
 
     def decode_url_list(self):
         '''
-
-        :return:
+        This method remove unnecessary parts from the urls we got from 'https://webapi.yanoshin/edinet'
+        :return: None
         '''
+        self.url_list = list(map(self._decode_url, self.url_list))
