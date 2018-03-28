@@ -1,5 +1,6 @@
 # coding: utf8
 
+import datetime
 from xml.etree import ElementTree
 import requests as requests
 import shutil
@@ -72,8 +73,15 @@ class Downloader():
         :return:
         '''
         response = requests.get(url, verify=False, stream=True)
-        file_dir = config.DOWNLOAD_DIR + response.headers['Content-Disposition'].split("\"")[1]
+        file_dir = config.DOWNLOAD_DIR + str(datetime.datetime.now()).replace(' ','') + '.zip'
         with open(file_dir, 'wb') as f:
             shutil.copyfileobj(response.raw, f)
+            print(file_dir + " is downloaded")
 
+    def download_files(self):
+        for url in self.url_list:
+            print(url)
+            self._download_a_file(url)
 
+    def main(self):
+        pass

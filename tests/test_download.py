@@ -23,9 +23,6 @@ class TestRequest(unittest.TestCase):
         for f in glob.glob(config.DOWNLOAD_DIR + '*'):
             os.remove(f)
 
-        if path.exists(config.TMP_FILE_DIR):
-            os.remove(config.TMP_FILE_DIR)
-
     def test_can_open_a_requested_page(self):
         '''
         This test ensure Downloader can open a requested page.
@@ -73,6 +70,10 @@ class TestRequest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_can_download_a_file_in_url_list(self):
+        '''
+        This test ensures that internal downloading method functions correctly.
+        :return:
+        '''
         self.d.save_response_as_tmp()
         self.d.parse_for_serching_edinet_links()
         self.d.decode_url_list()
@@ -80,6 +81,18 @@ class TestRequest(unittest.TestCase):
         file_num = len(os.listdir(config.DOWNLOAD_DIR))
         self.assertEqual(file_num, 1)
 
+    def test_can_download_all_files(self):
+        '''
+        This test ensures that all files of self.url_list are downloaded
+        :return:
+        '''
+        self.d.save_response_as_tmp()
+        self.d.parse_for_serching_edinet_links()
+        self.d.decode_url_list()
+        self.d.download_files()
+        url_num = len(self.d.url_list)
+        download_file_num = len(glob.glob(config.DOWNLOAD_DIR + '*'))
+        self.assertEqual(url_num, download_file_num)
 
 if __name__ == '__main__':
     unittest.main()
