@@ -7,7 +7,7 @@ from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 import unittest
-from xbrldownloader import downloader
+from edinetxbrl import downloader
 import config
 
 class TestRequest(unittest.TestCase):
