@@ -1,4 +1,6 @@
+work_dir
 tmp
+tmp_download
 tmp/*
 virtualenv
 virtualenv/*
