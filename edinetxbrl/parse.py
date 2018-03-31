@@ -71,6 +71,42 @@ class JPCRPP(object):
         xbrl_parser = XBRLParser()
         parser = xbrl_parser.parse(open(file))
 
+        # dei current fiscal year start date
+        current_fiscal_year_start_date = parser.find(name=re.compile(("CurrentFiscalYearStartDateDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.current_fiscal_year_start_date = self._data_process_for_dei(current_fiscal_year_start_date)
+
+        # dei current fiscal year end date
+        current_fiscal_year_end_date = parser.find(name=re.compile(("CurrentFiscalYearEndDateDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.current_fiscal_year_end_date = self._data_process_for_dei(current_fiscal_year_end_date)
+
+        # dei company name
+        company_name = parser.find(name=re.compile(("FilerNameInJapaneseDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.company_name = self._data_process_for_dei(company_name)
+
+        # dei edinet code
+        edinet_code = parser.find(name=re.compile(("EDINETCodeDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.edinet_code = self._data_process_for_dei(edinet_code)
+
+        # dei security code
+        security_code = parser.find(name=re.compile(("SecurityCodeDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.security_code = self._data_process_for_dei(security_code)
+
+        # dei accounting standard
+        accounting_standard = parser.find(name=re.compile(("AccountingStandardsDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.accounting_standard = self._data_process_for_dei(accounting_standard)
+
+        # dei english company name
+        english_company_name = parser.find(name=re.compile(("FilerNameInEnglishDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.english_company_name = self._data_process_for_dei(english_company_name)
+
+        # dei type of current period
+        type_of_current_period = parser.find(name=re.compile(("TypeOfCurrentPeriodDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.type_of_current_period = self._data_process_for_dei(type_of_current_period)
+
+        # dei whether_consolidated_financial_statements
+        whether_consolidated_financial_statements = parser.find(name=re.compile(("WhetherConsolidatedFinancialStatementsArePreparedDEI"), re.IGNORECASE | re.MULTILINE))
+        self.dei.whether_consolidated_financial_statements = self._data_process_for_dei(whether_consolidated_financial_statements)
+
         # per
         per = parser.find_all(name=re.compile(("PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioJMISSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
@@ -158,6 +194,16 @@ class JPCRPP(object):
             if condition2.match(node['contextref']):
                 return float(node.text)
         return 0
+
+    def _data_process_for_dei(self, node):
+
+        if node is None:
+            return ''
+        else:
+            return node.text
+
+    def create_sql(self):
+        pass
 
 class DEI(object):
 
