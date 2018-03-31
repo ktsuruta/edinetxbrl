@@ -53,7 +53,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(jpcrp.cash_flow_from_operating, 3646035000000)
         self.assertEqual(jpcrp.cash_flow_from_investing,-4336248000000)
         self.assertEqual(jpcrp.cash_flow_from_financing,919480000000)
-
+        self.assertEqual(jpcrp.net_assets, 41437473000000)
 
     def test_can_parse_annual_report_in_previous_context(self):
 
@@ -69,6 +69,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(jpcrp.cash_flow_from_operating, 2451316000000)
         self.assertEqual(jpcrp.cash_flow_from_investing,-3027312000000)
         self.assertEqual(jpcrp.cash_flow_from_financing,477242000000)
+        self.assertEqual(jpcrp.net_assets, 35483317000000)
 
     def test_can_parse_dei(self):
         file = 'tests/jpcrp030000.xbrl'
@@ -83,7 +84,25 @@ class TestParser(unittest.TestCase):
         self.assertEqual(jpcrp.dei.accounting_standard, "US GAAP")
         self.assertEqual(jpcrp.dei.english_company_name, "TOYOTA MOTOR CORPORATION")
         self.assertEqual(jpcrp.dei.type_of_current_period, 'FY')
-        self.assertEqual(jpcrp.dei.whether_consolidated_financial_statements, 'true')
+        self.assertEqual(jpcrp.dei.whether_consolidated_financial_statements, True)
+        self.assertEqual(jpcrp.get_current_fiscal_year(), '2013')
+
+    def test_can_parse_dei(self):
+        file = 'tests/jpcrp040300.xbrl'
+        jpcrp = parse.JPCRPP()
+        jpcrp.parse(file,contextref='current')
+
+        self.assertEqual(jpcrp.dei.current_fiscal_year_start_date, "2017-04-01")
+        self.assertEqual(jpcrp.dei.current_fiscal_year_end_date, "2018-03-31")
+        self.assertEqual(jpcrp.dei.company_name, "トヨタ自動車株式会社")
+        self.assertEqual(jpcrp.dei.edinet_code, 'E02144')
+        self.assertEqual(jpcrp.dei.security_code, '72030')
+        self.assertEqual(jpcrp.dei.accounting_standard, "US GAAP")
+        self.assertEqual(jpcrp.dei.english_company_name, "TOYOTA MOTOR CORPORATION")
+        self.assertEqual(jpcrp.dei.type_of_current_period, 'Q3')
+        self.assertEqual(jpcrp.dei.whether_consolidated_financial_statements, True)
+        self.assertEqual(jpcrp.get_current_fiscal_year(), '2017')
+
 
 if __name__ == '__main__':
     unittest.main()

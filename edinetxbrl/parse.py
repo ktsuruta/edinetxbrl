@@ -1,3 +1,4 @@
+import datetime
 import re
 from xbrl import XBRLParser
 
@@ -7,6 +8,9 @@ class Parser():
 
 # Base XBRL object
 class JPCRPP(object):
+
+    UNIT = 1000000
+
     def __init__(self,
                  contextref='current',
                  per = 0.0,#株価÷一株あたり純利益
@@ -14,6 +18,7 @@ class JPCRPP(object):
                  eps = 0.0, #earnings per share, １株あたり純利益
                  equity_to_asset_ratio = 0.0,#自己資産比率
                  net_sales = 0.0,#売上高
+                 net_assets = 0.0, #純資産
                  operating_revenue = 0.0, #営業利益
                  profit_before_loss = 0.0, #税引前利益
                  owners_equity_per_share = 0.0, #１株あたり資産
@@ -36,14 +41,15 @@ class JPCRPP(object):
         self.roe = roe
         self.eps = eps
         self.equity_to_asset_ratio = equity_to_asset_ratio
-        self.net_sales = net_sales
-        self.operating_revenue = operating_revenue
-        self.profit_before_tax = profit_before_loss
+        self._net_sales = net_sales
+        self._net_assets = net_assets
+        self._operating_revenue = operating_revenue
+        self._profit_before_tax = profit_before_loss
         self.owners_equity_per_share = owners_equity_per_share
-        self.cash_and_cash_equivalents = cash_and_cash_equivalents
-        self.cash_flow_from_operating = cash_flow_from_operating
-        self.cash_flow_from_investing = cash_flow_from_investing
-        self.cash_flow_from_financing = cash_flow_from_financing
+        self._cash_and_cash_equivalents = cash_and_cash_equivalents
+        self._cash_flow_from_operating = cash_flow_from_operating
+        self._cash_flow_from_investing = cash_flow_from_investing
+        self._cash_flow_from_financing = cash_flow_from_financing
         self.dei = DEI()
         self.dei.company_name = company_name,
         self.dei.edinet_code = edinet_code,
@@ -111,73 +117,67 @@ class JPCRPP(object):
         per = parser.find_all(name=re.compile(("PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioJMISSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.per = self._data_process_by_context(per)
-        print('per => ' + str(self.per))
 
         # roe
         roe = parser.find_all(name=re.compile(("RateOfReturnOnEquitySummaryOfBusinessResults.?|RateOfReturnOnEquityUSGAAPSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.roe = self._data_process_by_context(roe)
-        print('roe => ' + str(self.roe))
 
         # eps
         eps = parser.find_all(name=re.compile(("BasicEarningsLossPerShareUSGAAPSummaryOfBusinessResults.?|BasicEarningsLossPerShareIFRSSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.eps = self._data_process_by_context(eps)
-        print('eps => ' + str(self.eps))
 
         # equity to asset ratio
         equity_to_asset_ratio = parser.find_all(name=re.compile(("EquityToAssetRatioSummaryOfBusinessResults.?|EquityToAssetRatioUSGAAPSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.equity_to_asset_ratio = self._data_process_by_context(equity_to_asset_ratio)
-        print('equity to asset ratio => ' + str(self.equity_to_asset_ratio))
 
         # owners equity per share
         owners_equity_per_share = parser.find_all(name=re.compile(("EquityToAssetRatioJMISSummaryOfBusinessResults.?|EquityToAssetRatioIFRSSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.owners_equity_per_share = self._data_process_by_context(owners_equity_per_share)
-        print('owners equity per share => ' + str(self.owners_equity_per_share))
 
         # cash and cash equivalent
         cash_and_cash_equivalents = parser.find_all(name=re.compile(("CashAndCashEquivalentsIFRSSummaryOfBusinessResults.?|CashAndCashEquivalentsJMISSummaryOfBusinessResults.?|CashAndCashEquivalentsUSGAAPSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.cash_and_cash_equivalents = self._data_process_by_context(cash_and_cash_equivalents)
-        print('cash and cash equivalents => ' + str(self.cash_and_cash_equivalents))
 
         # net sales
         net_sales = parser.find_all(name=re.compile(("RevenuesUSGAAPSummaryOfBusinessResults.?|NetSalesSummaryOfBusinessResults.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.net_sales = self._data_process_by_context(net_sales)
-        print('net sales => ' + str(self.net_sales))
+
+        # net assets
+        net_assets = parser.find_all(name=re.compile(("NetAssetsSummaryOfBusinessResults.?|TotalAssetsSummaryOfBusinessResults.?|TotalAssetsIFRSSummaryOfBusinessResults.?|TotalAssetsJMISSummaryOfBusinessResults.?|TotalAssetsUSGAAPSummaryOfBusinessResults.?"), \
+                                                    re.IGNORECASE | re.MULTILINE))
+        self.net_assets = self._data_process_by_context(net_assets)
 
         #profit before tax
         profit_before_tax = parser.find_all(name=re.compile(("ProfitLossBeforeTaxJMISSummaryOfBusinessResults.?|ProfitLossBeforeTaxUSGAAPSummaryOfBusinessResults"), \
                                                           re.IGNORECASE | re.MULTILINE))
         self.profit_before_tax = self._data_process_by_context(profit_before_tax)
-        print('profit before tax => ' + str(self.profit_before_tax))
 
         #ordinary income
         operating_revenue = parser.find_all(name=re.compile((".?OperatingRevenue.?|OperatingIncomeLossUSGAAPSummaryOfBusinessResults.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.operating_revenue = self._data_process_by_context(operating_revenue)
-        print('operating revenue => ' + str(self.operating_revenue))
 
         # cash flow from operating
         cash_flow_from_operating = parser.find_all(name=re.compile(("CashFlowsFromUsedInOperating.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.cash_flow_from_operating = self._data_process_by_context(cash_flow_from_operating)
-        print('cash flow operating=> ' + str(self.cash_flow_from_operating))
 
         # cash flow from investing
         cash_flow_from_investing = parser.find_all(name=re.compile(("CashFlowsFromUsedInInvesting.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.cash_flow_from_investing = self._data_process_by_context(cash_flow_from_investing)
-        print('cash flow investing => ' + str(self.cash_flow_from_investing))
 
         # cash flow from financing
         cash_flow_from_financing = parser.find_all(name=re.compile(("CashFlowsFromUsedInFinancing.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.cash_flow_from_financing = self._data_process_by_context(cash_flow_from_financing)
-        print('cash flow financing => ' + str(self.cash_flow_from_financing))
+
 
     def _data_process_by_context(self,nodes):
         '''
@@ -187,6 +187,15 @@ class JPCRPP(object):
         '''
         condition1 = re.compile((self.contextref+"quarter.?"),re.IGNORECASE)
         condition2 = re.compile((self.contextref+".?"),re.IGNORECASE)
+        if self.dei.whether_consolidated_financial_statements:
+            for node in nodes:
+                if condition1.match(node['contextref']):
+                    if 'NonConsolidatedMember' not in node['contextref']:
+                        return float(node.text)
+            for node in nodes:
+                if condition2.match(node['contextref']):
+                    if 'NonConsolidatedMember' not in node['contextref']:
+                        return float(node.text)
         for node in nodes:
             if condition1.match(node['contextref']):
                 return float(node.text)
@@ -199,11 +208,91 @@ class JPCRPP(object):
 
         if node is None:
             return ''
+        elif node.text == 'true':
+            return True
+        elif node.text == 'false':
+            return False
         else:
             return node.text
 
-    def create_sql(self):
-        pass
+    def get_current_fiscal_year(self):
+        return(self.dei.current_fiscal_year_start_date[:4])
+
+    def get_type_of_current_period(self):
+        return(datetime.datetime(int(self.dei.type_of_current_period),1,1))
+
+    def get_current_fiscal_year_start_date(self):
+        date_elements = self.dei.current_fiscal_year_start_date.split('-')
+        return datetime.datetime(int(date_elements[0]), int(date_elements[1]), int(date_elements[2]))
+
+    def get_current_fiscal_year_end_date(self):
+        date_elements = self.dei.current_fiscal_year_end_date.split('-')
+        return datetime.datetime(int(date_elements[0]), int(date_elements[1]), int(date_elements[2]))
+
+    @property
+    def net_sales(self):
+        return self._net_sales / JPCRPP.UNIT
+
+    @net_sales.setter
+    def net_sales(self, value):
+        self._net_sales = value
+
+    @property
+    def net_assets(self):
+        return self._net_assets / JPCRPP.UNIT
+
+    @net_assets.setter
+    def net_assets(self, value):
+        self._net_assets = value
+
+    @property
+    def operating_revenue(self):
+        return self._operating_revenue / JPCRPP.UNIT
+
+    @operating_revenue.setter
+    def operating_revenue(self, value):
+        self._operating_revenue = value
+
+    @property
+    def profit_before_tax(self):
+        return self._profit_before_tax / JPCRPP.UNIT
+
+    @profit_before_tax.setter
+    def profit_before_tax(self, value):
+        self._profit_before_tax = value
+
+    @property
+    def cash_and_cash_equivalents(self):
+        return self._cash_and_cash_equivalents / JPCRPP.UNIT
+
+    @cash_and_cash_equivalents.setter
+    def cash_and_cash_equivalents(self, value):
+        self._cash_and_cash_equivalents = value
+
+    @property
+    def cash_flow_from_operating(self):
+        return self._cash_flow_from_operating / JPCRPP.UNIT
+
+    @cash_flow_from_operating.setter
+    def cash_flow_from_operating(self, value):
+        self._cash_flow_from_operating = value
+
+    @property
+    def cash_flow_from_investing(self):
+        return self._cash_flow_from_investing / JPCRPP.UNIT
+
+    @cash_flow_from_investing.setter
+    def cash_flow_from_investing(self, value):
+        self._cash_flow_from_investing = value
+
+    @property
+    def cash_flow_from_financing(self):
+        return self._cash_flow_from_financing / JPCRPP.UNIT
+
+    @cash_flow_from_financing.setter
+    def cash_flow_from_financing(self, value):
+        self._cash_flow_from_financing = value
+
 
 class DEI(object):
 
