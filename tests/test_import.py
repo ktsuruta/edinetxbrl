@@ -1,10 +1,8 @@
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-
 import unittest
 from edinetxbrl import parse, importer
-import config
 
 class TestImporter(unittest.TestCase):
 
@@ -26,9 +24,6 @@ class TestImporter(unittest.TestCase):
         sql_excuter = importer.Importer()
         sql_excuter.import_report_to_mysql(jpcrp)
         self.assertEqual(sql_excuter.count_report(), 1)
-
-        
-
 
 if __name__ == '__main__':
     unittest.main()

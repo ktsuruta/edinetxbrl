@@ -1,4 +1,4 @@
-import datetime
+import datetime, os
 import pymysql.cursors
 
 class Importer():
@@ -9,8 +9,8 @@ class Importer():
     def __init__(self):
         # Connect to the database
         self.connection = pymysql.connect(host='localhost',
-                                          user='root',
-                                          password='Tarutsunnke0331',
+                                          user=os.environ['MYSQL_USER'],
+                                          password=os.environ['MYSQL_USER_PASSWD'],
                                           db='xbrl',
                                           charset='utf8mb4',
                                           cursorclass=pymysql.cursors.DictCursor)
@@ -69,7 +69,7 @@ class Importer():
                 current_fiscal_year_end_date)\
                 VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,\
                        %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            print(jpcrp.net_sales)
+
             cursor.execute(sql,(
             jpcrp.dei.edinet_code,
             jpcrp.get_current_fiscal_year(),

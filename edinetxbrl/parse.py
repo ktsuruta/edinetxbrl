@@ -37,9 +37,9 @@ class JPCRPP(object):
                  current_fiscal_year_end_date = ''
                  ):
         self.contextref = contextref
-        self.per = per
-        self.roe = roe
-        self.eps = eps
+        self._per = per
+        self._roe = roe
+        self._eps = eps
         self.equity_to_asset_ratio = equity_to_asset_ratio
         self._net_sales = net_sales
         self._net_assets = net_assets
@@ -114,17 +114,17 @@ class JPCRPP(object):
         self.dei.whether_consolidated_financial_statements = self._data_process_for_dei(whether_consolidated_financial_statements)
 
         # per
-        per = parser.find_all(name=re.compile(("PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioJMISSummaryOfBusinessResults.?"), \
+        per = parser.find_all(name=re.compile(("riceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioJMISSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.per = self._data_process_by_context(per)
 
         # roe
-        roe = parser.find_all(name=re.compile(("RateOfReturnOnEquitySummaryOfBusinessResults.?|RateOfReturnOnEquityUSGAAPSummaryOfBusinessResults.?"), \
+        roe = parser.find_all(name=re.compile(("RateOfReturnOnEquitySummaryOfBusinessResults.?|RateOfReturnOnEquitySummaryOfBusinessResults.?|RateOfReturnOnEquityUSGAAPSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.roe = self._data_process_by_context(roe)
 
-        # eps
-        eps = parser.find_all(name=re.compile(("BasicEarningsLossPerShareUSGAAPSummaryOfBusinessResults.?|BasicEarningsLossPerShareIFRSSummaryOfBusinessResults.?"), \
+        # eps                                  
+        eps = parser.find_all(name=re.compile(("BasicEarningsLossPerShareSummaryOfBusinessResults.?|BasicEarningsLossPerShareUSGAAPSummaryOfBusinessResults.?|BasicEarningsLossPerShareIFRSSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.eps = self._data_process_by_context(eps)
 
@@ -139,7 +139,7 @@ class JPCRPP(object):
         self.owners_equity_per_share = self._data_process_by_context(owners_equity_per_share)
 
         # cash and cash equivalent
-        cash_and_cash_equivalents = parser.find_all(name=re.compile(("CashAndCashEquivalentsIFRSSummaryOfBusinessResults.?|CashAndCashEquivalentsJMISSummaryOfBusinessResults.?|CashAndCashEquivalentsUSGAAPSummaryOfBusinessResults.?"), \
+        cash_and_cash_equivalents = parser.find_all(name=re.compile(("CashAndCashEquivalentsIFRSSummaryOfBusinessResults.?|CashAndCashEquivalentsJMISSummaryOfBusinessResults.?|CashAndCashEquivalentsUSGAAPSummaryOfBusinessResults.?|CashAndCashEquivalentsSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.cash_and_cash_equivalents = self._data_process_by_context(cash_and_cash_equivalents)
 
@@ -159,22 +159,22 @@ class JPCRPP(object):
         self.profit_before_tax = self._data_process_by_context(profit_before_tax)
 
         #ordinary income
-        operating_revenue = parser.find_all(name=re.compile((".?OperatingRevenue.?|OperatingIncomeLossUSGAAPSummaryOfBusinessResults.?"), \
+        operating_revenue = parser.find_all(name=re.compile((".?OperatingRevenue.?|OperatingIncomeLossUSGAAPSummaryOfBusinessResults.?|OrdinaryIncomeLossSummaryOfBusinessResults.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.operating_revenue = self._data_process_by_context(operating_revenue)
 
         # cash flow from operating
-        cash_flow_from_operating = parser.find_all(name=re.compile(("CashFlowsFromUsedInOperating.?"), \
+        cash_flow_from_operating = parser.find_all(name=re.compile(("CashFlowsFromUsedInOperating.?|NetCashProvidedByUsedInOperating.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.cash_flow_from_operating = self._data_process_by_context(cash_flow_from_operating)
 
         # cash flow from investing
-        cash_flow_from_investing = parser.find_all(name=re.compile(("CashFlowsFromUsedInInvesting.?"), \
+        cash_flow_from_investing = parser.find_all(name=re.compile(("CashFlowsFromUsedInInvesting.?|NetCashProvidedByUsedInInvesting.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.cash_flow_from_investing = self._data_process_by_context(cash_flow_from_investing)
 
         # cash flow from financing
-        cash_flow_from_financing = parser.find_all(name=re.compile(("CashFlowsFromUsedInFinancing.?"), \
+        cash_flow_from_financing = parser.find_all(name=re.compile(("CashFlowsFromUsedInFinancing.?|NetCashProvidedByUsedInFinancing.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
         self.cash_flow_from_financing = self._data_process_by_context(cash_flow_from_financing)
 
@@ -195,13 +195,22 @@ class JPCRPP(object):
             for node in nodes:
                 if condition2.match(node['contextref']):
                     if 'NonConsolidatedMember' not in node['contextref']:
-                        return float(node.text)
+                        try:
+                            return float(node.text)
+                        except ValueError:
+                            return 0
         for node in nodes:
             if condition1.match(node['contextref']):
-                return float(node.text)
+                try:
+                    return float(node.text)
+                except ValueError:
+                    return 0
         for node in nodes:
             if condition2.match(node['contextref']):
-                return float(node.text)
+                try:
+                    return float(node.text)
+                except:
+                    return 0
         return 0
 
     def _data_process_for_dei(self, node):
@@ -228,6 +237,39 @@ class JPCRPP(object):
     def get_current_fiscal_year_end_date(self):
         date_elements = self.dei.current_fiscal_year_end_date.split('-')
         return datetime.datetime(int(date_elements[0]), int(date_elements[1]), int(date_elements[2]))
+
+    @property
+    def per(self):
+        if self._per < -999:
+            return -999
+        else:
+            return self._per
+
+    @per.setter
+    def per(self, value):
+        self._per = value
+
+    @property
+    def roe(self):
+        if self._roe < -999:
+            return -999
+        else:
+            return self._roe
+
+    @roe.setter
+    def roe(self, value):
+        self._roe = value
+
+    @property
+    def eps(self):
+        if self._eps < -999:
+            return -999
+        else:
+            return self._eps
+
+    @eps.setter
+    def eps(self, value):
+        self._eps = value
 
     @property
     def net_sales(self):

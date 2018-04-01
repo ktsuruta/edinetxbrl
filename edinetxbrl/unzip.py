@@ -17,6 +17,7 @@ class Unziper():
         :return:
         '''
         with open(file, 'rb') as f:
+            print(file)
             try:
                 zf = zipfile.ZipFile(f)
                 zf.extractall(dest)

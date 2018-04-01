@@ -72,11 +72,14 @@ class Downloader():
         :param <str> url: A url of zip file to download
         :return:
         '''
-        response = requests.get(url, verify=False, stream=True)
-        file_dir = config.DOWNLOAD_DIR + str(datetime.datetime.now()).replace(' ','') + '.zip'
-        with open(file_dir, 'wb') as f:
-            shutil.copyfileobj(response.raw, f)
-            print(file_dir + " is downloaded")
+        try:
+            response = requests.get(url, verify=False, stream=True)
+            file_dir = config.DOWNLOAD_DIR + str(datetime.datetime.now()).replace(' ','') + '.zip'
+            with open(file_dir, 'wb') as f:
+                shutil.copyfileobj(response.raw, f)
+                print(file_dir + " is downloaded")
+        except:
+            print('You got an error.')
 
     def download_files(self):
         for url in self.url_list:
