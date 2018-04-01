@@ -19,6 +19,7 @@ class JPCRPP(object):
                  equity_to_asset_ratio = 0.0,#自己資産比率
                  net_sales = 0.0,#売上高
                  net_assets = 0.0, #純資産
+                 ordinary_revenue = 0.0, #経常利益
                  operating_revenue = 0.0, #営業利益
                  profit_before_loss = 0.0, #税引前利益
                  owners_equity_per_share = 0.0, #１株あたり資産
@@ -26,6 +27,7 @@ class JPCRPP(object):
                  cash_flow_from_operating = 0.0,
                  cash_flow_from_investing = 0.0,
                  cash_flow_from_financing = 0.0,
+                 pay_out_ratio = 0.0,
                  company_name = '',
                  edinet_code = '',
                  security_code = '',
@@ -41,9 +43,11 @@ class JPCRPP(object):
         self._roe = roe
         self._eps = eps
         self.equity_to_asset_ratio = equity_to_asset_ratio
+        self._pay_out_ratio = pay_out_ratio
         self._net_sales = net_sales
         self._net_assets = net_assets
         self._operating_revenue = operating_revenue
+        self._ordinary_revenue = ordinary_revenue
         self._profit_before_tax = profit_before_loss
         self.owners_equity_per_share = owners_equity_per_share
         self._cash_and_cash_equivalents = cash_and_cash_equivalents
@@ -79,11 +83,17 @@ class JPCRPP(object):
 
         # dei current fiscal year start date
         current_fiscal_year_start_date = parser.find(name=re.compile(("CurrentFiscalYearStartDateDEI"), re.IGNORECASE | re.MULTILINE))
-        self.dei.current_fiscal_year_start_date = self._data_process_for_dei(current_fiscal_year_start_date)
+        if current_fiscal_year_start_date is None or current_fiscal_year_start_date == '':
+            self.dei.current_fiscal_year_start_date = '1990-1-1'
+        else:
+            self.dei.current_fiscal_year_start_date = self._data_process_for_dei(current_fiscal_year_start_date)
 
         # dei current fiscal year end date
         current_fiscal_year_end_date = parser.find(name=re.compile(("CurrentFiscalYearEndDateDEI"), re.IGNORECASE | re.MULTILINE))
-        self.dei.current_fiscal_year_end_date = self._data_process_for_dei(current_fiscal_year_end_date)
+        if current_fiscal_year_end_date is None or current_fiscal_year_end_date == '':
+            self.dei.current_fiscal_year_end_date = '1990-1-1'
+        else:
+            self.dei.current_fiscal_year_end_date = self._data_process_for_dei(current_fiscal_year_end_date)
 
         # dei company name
         company_name = parser.find(name=re.compile(("FilerNameInJapaneseDEI"), re.IGNORECASE | re.MULTILINE))
@@ -111,10 +121,13 @@ class JPCRPP(object):
 
         # dei whether_consolidated_financial_statements
         whether_consolidated_financial_statements = parser.find(name=re.compile(("WhetherConsolidatedFinancialStatementsArePreparedDEI"), re.IGNORECASE | re.MULTILINE))
-        self.dei.whether_consolidated_financial_statements = self._data_process_for_dei(whether_consolidated_financial_statements)
+        if whether_consolidated_financial_statements is None or whether_consolidated_financial_statements == '':
+            self.dei.whether_consolidated_financial_statements = False
+        else:
+            self.dei.whether_consolidated_financial_statements = self._data_process_for_dei(whether_consolidated_financial_statements)
 
         # per
-        per = parser.find_all(name=re.compile(("riceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioJMISSummaryOfBusinessResults.?"), \
+        per = parser.find_all(name=re.compile(("PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioJMISSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.per = self._data_process_by_context(per)
 
@@ -134,7 +147,7 @@ class JPCRPP(object):
         self.equity_to_asset_ratio = self._data_process_by_context(equity_to_asset_ratio)
 
         # owners equity per share
-        owners_equity_per_share = parser.find_all(name=re.compile(("EquityToAssetRatioJMISSummaryOfBusinessResults.?|EquityToAssetRatioIFRSSummaryOfBusinessResults.?"), \
+        owners_equity_per_share = parser.find_all(name=re.compile(("EquityToAssetRatioJMISSummaryOfBusinessResults.?|EquityToAssetRatioIFRSSummaryOfBusinessResults.?|EquityAttributableToOwnersOfParentPerShareUSGAAPSummaryOfBusinessResults.?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.owners_equity_per_share = self._data_process_by_context(owners_equity_per_share)
 
@@ -154,13 +167,18 @@ class JPCRPP(object):
         self.net_assets = self._data_process_by_context(net_assets)
 
         #profit before tax
-        profit_before_tax = parser.find_all(name=re.compile(("ProfitLossBeforeTaxJMISSummaryOfBusinessResults.?|ProfitLossBeforeTaxUSGAAPSummaryOfBusinessResults"), \
+        profit_before_tax = parser.find_all(name=re.compile(("ProfitLossBeforeTaxJMISSummaryOfBusinessResults.?|ProfitLossBeforeTaxUSGAAPSummaryOfBusinessResults|IncomeBeforeIncomeTaxes.?"), \
                                                           re.IGNORECASE | re.MULTILINE))
         self.profit_before_tax = self._data_process_by_context(profit_before_tax)
 
         #ordinary income
-        operating_revenue = parser.find_all(name=re.compile((".?OperatingRevenue.?|OperatingIncomeLossUSGAAPSummaryOfBusinessResults.?|OrdinaryIncomeLossSummaryOfBusinessResults.?"), \
+        ordinary_revenue = parser.find_all(name=re.compile(("OrdinaryIncome.?|OrdinaryIncomeLossSummaryOfBusinessResults.?"), \
                                                                    re.IGNORECASE | re.MULTILINE))
+        self.ordinary_revenue = self._data_process_by_context(ordinary_revenue)
+
+        #New!  operating income
+        operating_revenue = parser.find_all(name=re.compile(("jppfs_cor:OperatingIncome.?|OperatingRevenue.?|OperatingIncomeLossUSGAAPSummaryOfBusinessResults.?"), \
+                                                            re.IGNORECASE | re.MULTILINE))
         self.operating_revenue = self._data_process_by_context(operating_revenue)
 
         # cash flow from operating
@@ -178,6 +196,10 @@ class JPCRPP(object):
                                                                    re.IGNORECASE | re.MULTILINE))
         self.cash_flow_from_financing = self._data_process_by_context(cash_flow_from_financing)
 
+        # New! pay out ratio summary of business result
+        pay_out_ratio = parser.find_all(name=re.compile(("PayoutRatioSummaryOfBusinessResult.?"), \
+                                                                   re.IGNORECASE | re.MULTILINE))
+        self.pay_out_ratio = self._data_process_by_context(pay_out_ratio)
 
     def _data_process_by_context(self,nodes):
         '''
@@ -231,8 +253,11 @@ class JPCRPP(object):
         return(datetime.datetime(int(self.dei.type_of_current_period),1,1))
 
     def get_current_fiscal_year_start_date(self):
-        date_elements = self.dei.current_fiscal_year_start_date.split('-')
-        return datetime.datetime(int(date_elements[0]), int(date_elements[1]), int(date_elements[2]))
+        try:
+            date_elements = self.dei.current_fiscal_year_start_date.split('-')
+            return datetime.datetime(int(date_elements[0]), int(date_elements[1]), int(date_elements[2]))
+        except:
+            return datetime.datetime(1990,1,1)
 
     def get_current_fiscal_year_end_date(self):
         date_elements = self.dei.current_fiscal_year_end_date.split('-')
@@ -296,6 +321,14 @@ class JPCRPP(object):
         self._operating_revenue = value
 
     @property
+    def ordinary_revenue(self):
+        return self._ordinary_revenue / JPCRPP.UNIT
+
+    @ordinary_revenue.setter
+    def ordinary_revenue(self, value):
+        self._ordinary_revenue = value
+
+    @property
     def profit_before_tax(self):
         return self._profit_before_tax / JPCRPP.UNIT
 
@@ -335,6 +368,16 @@ class JPCRPP(object):
     def cash_flow_from_financing(self, value):
         self._cash_flow_from_financing = value
 
+    @property
+    def pay_out_ratio(self):
+        if self._pay_out_ratio < -999:
+            return -999
+        else:
+            return self._pay_out_ratio
+
+    @pay_out_ratio.setter
+    def pay_out_ratio(self, value):
+        self._pay_out_ratio = value
 
 class DEI(object):
 

@@ -100,5 +100,15 @@ class TestParser(unittest.TestCase):
         self.assertEqual(jpcrp.get_current_fiscal_year(), '2017')
 
 
+    def test_can_parse_dei(self):
+        file = 'tests/JAPAN-GAAP-jpcrp030000.xbrl'
+        jpcrp = parse.JPCRPP()
+        jpcrp.parse(file,contextref='current')
+
+        self.assertEqual(jpcrp.pay_out_ratio, 0.1426)
+        self.assertEqual(jpcrp.ordinary_revenue, 1622)
+        self.assertEqual(jpcrp.operating_revenue, 2521)
+
+
 if __name__ == '__main__':
     unittest.main()
