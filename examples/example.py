@@ -13,10 +13,13 @@ def main():
     data_importer = importer.Importer()
     counter = 1
     for file in files:
-        print(str(counter) + ' / ' + str(file_num))
-        jpcrp.parse(file, contextref='current')
-        data_importer.import_dei_to_mysql(jpcrp)
-        data_importer.import_report_to_mysql(jpcrp)
+        try:
+            print(str(counter) + ' / ' + str(file_num))
+            jpcrp.parse(file, contextref='current')
+            data_importer.import_dei_to_mysql(jpcrp)
+            data_importer.import_report_to_mysql(jpcrp)
+        except:
+            print('error occured')
         counter += 1
 
 if __name__ == '__main__':

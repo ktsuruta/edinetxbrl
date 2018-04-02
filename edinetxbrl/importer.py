@@ -12,7 +12,7 @@ class Importer():
                                           user=os.environ['MYSQL_USER'],
                                           password=os.environ['MYSQL_USER_PASSWD'],
                                           #db='xbrl',
-                                          db='xbrl',
+                                          db='xbrl-django',
                                           charset='utf8mb4',
                                           cursorclass=pymysql.cursors.DictCursor)
 

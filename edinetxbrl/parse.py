@@ -124,7 +124,7 @@ class JPCRPP(object):
         if whether_consolidated_financial_statements is None or whether_consolidated_financial_statements == '':
             self.dei.whether_consolidated_financial_statements = False
         else:
-            self.dei.whether_consolidated_financial_statements = self._data_process_for_dei(whether_consolidated_financial_statements)
+            self.dei.whether_consolidated_financial_statements = self._data_process_for_dei(whether_consolidated_financial_statements, boolean=True)
 
         # per
         per = parser.find_all(name=re.compile(("PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioSummaryOfBusinessResults.?|PriceEarningsRatioIFRSSummaryOfBusinessResults.?|PriceEarningsRatioJMISSummaryOfBusinessResults.?"), \
@@ -235,15 +235,25 @@ class JPCRPP(object):
                     return 0
         return 0
 
-    def _data_process_for_dei(self, node):
-
-        if node is None:
-            return ''
+    def _data_process_for_dei(self, node, boolean=False):
+        '''
+        whether... must be boolean. The conditions in this method is to check for whether...
+        :param node:
+        :param boolean:
+        :return:
+        '''
+        if node is None or node == '':
+            if boolean:
+                return False
+            else:
+                return ''
         elif node.text == 'true':
             return True
         elif node.text == 'false':
             return False
         else:
+            if boolean:
+                return False
             return node.text
 
     def get_current_fiscal_year(self):
@@ -260,8 +270,11 @@ class JPCRPP(object):
             return datetime.datetime(1990,1,1)
 
     def get_current_fiscal_year_end_date(self):
-        date_elements = self.dei.current_fiscal_year_end_date.split('-')
-        return datetime.datetime(int(date_elements[0]), int(date_elements[1]), int(date_elements[2]))
+        try:
+            date_elements = self.dei.current_fiscal_year_end_date.split('-')
+            return datetime.datetime(int(date_elements[0]), int(date_elements[1]), int(date_elements[2]))
+        except:
+            return datetime.datetime(1990,1,1)
 
     @property
     def per(self):
@@ -378,6 +391,7 @@ class JPCRPP(object):
     @pay_out_ratio.setter
     def pay_out_ratio(self, value):
         self._pay_out_ratio = value
+
 
 class DEI(object):
 

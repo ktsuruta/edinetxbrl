@@ -25,6 +25,7 @@ class TestFunctional(unittest.TestCase):
             file_downloader.decode_url_list()
             file_downloader.download_files()
 
+
         unzip.Unziper.unzip()
 
         files = glob.glob(config.UNZIP_FILE_DIR+"**/**/PublicDoc/*.xbrl")
