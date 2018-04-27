@@ -19,6 +19,8 @@ class JPCRPP(object):
                  equity_to_asset_ratio = 0.0,#自己資産比率
                  net_sales = 0.0,#売上高
                  net_assets = 0.0, #純資産
+                 total_assets = 0.0, #資産
+                 liabilities=0.0, #負債
                  ordinary_revenue = 0.0, #経常利益
                  operating_revenue = 0.0, #営業利益
                  profit_before_loss = 0.0, #税引前利益
@@ -46,6 +48,8 @@ class JPCRPP(object):
         self._pay_out_ratio = pay_out_ratio
         self._net_sales = net_sales
         self._net_assets = net_assets
+        self._total_assets = total_assets
+        self._liabilities = liabilities
         self._operating_revenue = operating_revenue
         self._ordinary_revenue = ordinary_revenue
         self._profit_before_tax = profit_before_loss
@@ -161,8 +165,13 @@ class JPCRPP(object):
                                                                    re.IGNORECASE | re.MULTILINE))
         self.net_sales = self._data_process_by_context(net_sales)
 
+        # total_assets
+        total_assets = parser.find_all(name=re.compile(("TotalAssetsUSGAAPSummaryOfBusinessResults?|TotalAssetsSummaryOfBusinessResults?|TotalAssetsIFRSSummaryOfBusinessResults?|TotalAssetsJMISSummaryOfBusinessResults?"), \
+                                                     re.IGNORECASE | re.MULTILINE))
+        self.total_assets = self._data_process_by_context(total_assets)
+
         # net assets
-        net_assets = parser.find_all(name=re.compile(("NetAssetsSummaryOfBusinessResults.?|TotalAssetsSummaryOfBusinessResults.?|TotalAssetsIFRSSummaryOfBusinessResults.?|TotalAssetsJMISSummaryOfBusinessResults.?|TotalAssetsUSGAAPSummaryOfBusinessResults.?"), \
+        net_assets = parser.find_all(name=re.compile(("EquityIncludingPortionAttributableToNonControllingInterestUSGAAPSummaryOfBusinessResults?|NetAssetsSummaryOfBusinessResults?"), \
                                                     re.IGNORECASE | re.MULTILINE))
         self.net_assets = self._data_process_by_context(net_assets)
 
@@ -324,6 +333,18 @@ class JPCRPP(object):
     @net_assets.setter
     def net_assets(self, value):
         self._net_assets = value
+
+    @property
+    def total_assets(self):
+        return self._total_assets / JPCRPP.UNIT
+
+    @total_assets.setter
+    def total_assets(self, value):
+        self._total_assets = value
+
+    @property
+    def liabilities(self):
+        return (self._total_assets - self._net_assets) / JPCRPP.UNIT
 
     @property
     def operating_revenue(self):

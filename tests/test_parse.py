@@ -49,7 +49,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(jpcrp.cash_flow_from_operating, 3646035)
         self.assertEqual(jpcrp.cash_flow_from_investing,-4336248)
         self.assertEqual(jpcrp.cash_flow_from_financing,919480)
-        self.assertEqual(jpcrp.net_assets, 41437473)
+        self.assertEqual(jpcrp.net_assets, 15218987)
+        self.assertEqual(jpcrp.total_assets, 41437473)
+        self.assertEqual(jpcrp.liabilities, 41437473 - 15218987)
+
 
     def test_can_parse_annual_report_in_previous_context(self):
 
@@ -65,7 +68,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(jpcrp.cash_flow_from_operating, 2451316)
         self.assertEqual(jpcrp.cash_flow_from_investing,-3027312)
         self.assertEqual(jpcrp.cash_flow_from_financing,477242)
-        self.assertEqual(jpcrp.net_assets, 35483317)
+        self.assertEqual(jpcrp.net_assets, 12772856)
+        self.assertEqual(jpcrp.total_assets, 35483317)
 
     def test_can_parse_dei(self):
         file = 'tests/jpcrp030000.xbrl'
