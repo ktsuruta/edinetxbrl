@@ -57,6 +57,8 @@ class Importer():
                 pay_out_ratio,\
                 net_sales,\
                 net_assets,\
+                total_assets,\
+                liabilities,\
                 operating_revenue,\
                 ordinary_revenue,\
                 profit_before_tax,\
@@ -72,7 +74,7 @@ class Importer():
                 current_fiscal_year_end_date)\
                 VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,\
                        %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,\
-                       %s, %s)"
+                       %s,%s,%s,%s)"
 
             cursor.execute(sql,(
             jpcrp.dei.edinet_code,
@@ -84,6 +86,8 @@ class Importer():
             jpcrp.pay_out_ratio,
             jpcrp.net_sales,
             jpcrp.net_assets,
+            jpcrp.total_assets,
+            jpcrp.liabilities,
             jpcrp.operating_revenue,
             jpcrp.ordinary_revenue,
             jpcrp.profit_before_tax,
